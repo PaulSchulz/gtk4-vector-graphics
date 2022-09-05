@@ -7,14 +7,23 @@
 #define RESOURCE "/org/mawsonlakes/vector.ui"
 
 float m_radius     = 0.42;
-float m_line_width = 0.02;
+float m_line_width = 0.005;
 
 static void
 draw_clock (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
+    float line_width;
 
     // Scale to unit square and translate (0, 0) to be (0.5, 0.5), i.e.
     // the center of the window
-    cairo_scale(cr, width, height);
+    if (width < height) {
+        cairo_scale(cr, width, width);
+        line_width = m_line_width * 1000.0 / width;
+    } else {
+        cairo_scale(cr, height, height);
+        line_width = m_line_width * 1000.0 / height;
+    }
+
+    // Center Screen
     cairo_translate(cr, 0.5, 0.5);
 
     // Set the line width and save the cairo drawing state.
@@ -34,16 +43,6 @@ draw_clock (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer u
 
     cairo_stroke(cr);
     cairo_restore(cr); /* stack-pen-size */
-
-    // Fill the clockface with white
-    // cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.8);
-    // cairo_fill_preserve(cr);
-    // Restore the path, paint the outside of the clock face.
-    // cairo_restore(cr);
-    // cairo_stroke_preserve(cr);
-
-    // Set the 'clip region' to the inside of the path (fill region).
-    // cairo_clip(cr);
 
     // Clock ticks
     for (int i = 0; i < 24; i++)
@@ -96,13 +95,16 @@ draw_clock (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer u
             cairo_restore(cr); /* stack-pen-size */
             cairo_stroke(cr);
         }
-}
+    }
 
-// Draw the analog hands
+    // Draw the analog hands
 
-// Get the current Unix time, convert to the local time and break into time
-// structure to read various time parts.
-time_t rawtime;
+    // Get the current Unix time, convert to the local time and break into time
+    // structure to read various time parts.
+
+    // TODO For some reason this is getting the wrong hour. Out by 6 hours.
+
+    time_t rawtime;
     time(&rawtime);
     struct tm * timeinfo = localtime (&rawtime);
 
@@ -147,10 +149,6 @@ time_t rawtime;
                   -cos(hours + minutes / 12.0) * (m_radius * 0.5));
     cairo_stroke(cr);
     cairo_restore(cr);
-
-    // Draw a little dot in the middle
-    // cairo_arc(cr, 0.0, 0.0, m_line_width / 3.0, 0.0, 2.0 * M_PI);
-    // cairo_fill(cr);
 }
 
 
