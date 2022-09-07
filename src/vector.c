@@ -193,11 +193,9 @@ typedef struct {
     float i; // Intensity 0.0 - Off (Min), 1.0 -  On (Max)
 } Segment;
 
-GList* figure = NULL;
-
 // Square
 GList*
-create_figure (GList* figure){
+create_square (GList* figure){
     Segment* segment = NULL;
 
     segment = (Segment*)malloc(sizeof(Segment));
@@ -233,9 +231,47 @@ create_figure (GList* figure){
     return figure;
 }
 
+GList*
+create_spaceship (GList* figure){
+    Segment* segment = NULL;
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x =  0.0;
+    segment->y =  0.0;
+    segment->i =  0.0;
+    figure = g_list_append(figure, segment);
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x =  1.0;
+    segment->y =  1.0;
+    segment->i =  1.0;
+    figure = g_list_append(figure, segment);
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x =  0.0;
+    segment->y = -1.0;
+    segment->i =  1.0;
+    figure = g_list_append(figure, segment);
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x = -1.0;
+    segment->y =  1.0;
+    segment->i =  1.0;
+    figure = g_list_append(figure, segment);
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x =  0.0;
+    segment->y =  0.0;
+    segment->i =  1.0;
+    figure = g_list_append(figure, segment);
+
+    return figure;
+}
+
+
+// TODO Create free_figure function
 void
 free_figure (GList* figure) {
-
 
 }
 
@@ -251,7 +287,6 @@ translate_figure (GList* figure, float dx, float dy) {
     }
 }
 
-
 void
 scale_figure (GList* figure, float scale) {
     Segment* segment;
@@ -262,8 +297,9 @@ scale_figure (GList* figure, float scale) {
         segment->x = segment->x * scale;
         segment->y = segment->y * scale;;
     }
-
 }
+
+GList* figure    = NULL;
 
 static void
 draw_figure (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
@@ -284,15 +320,30 @@ draw_figure (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer 
 }
 
 //////////////////////////////////////////////////////////////////////////////
+GList* spaceship = NULL;
+GList* square    = NULL;
+
 static void
 setup_display (void) {
+    GList* spaceship = NULL;
 
-    figure = create_figure(figure);
-    scale_figure(figure, 0.3);
+    square    = create_square(square);
+    scale_figure(square,0.02);
+
+    spaceship = create_spaceship(spaceship);
+    scale_figure(spaceship,0.02);
+
+    figure = g_list_concat(figure, square);
+    figure = g_list_concat(figure, spaceship);
 }
 
 static void
 draw_display (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
+
+    int x = 0;
+    int y = 0;
+
+    translate_figure(figure, 0.0, -0.001);
 
     draw_setup (area, cr, width, height, user_data);
     draw_clock (area, cr, width, height, user_data);
@@ -323,7 +374,7 @@ app_activate (GApplication *app, gpointer user_data) {
 
     setup_display();
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA (display), draw_display, NULL, NULL);
-    g_timeout_add(1000, (GSourceFunc) time_handler, (gpointer) display);
+    g_timeout_add(10, (GSourceFunc) time_handler, (gpointer) display);
     gtk_widget_show(win);
 
 }
