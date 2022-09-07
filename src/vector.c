@@ -189,6 +189,29 @@ draw_digital_clock (GtkDrawingArea *area,
 
 }
 
+typedef struct {
+    float x;
+    float y;
+    float i; // Intensity 0.0 - Off (Min), 1.0 -  On (Max)
+} Segment;
+
+GList* figure;
+
+static void
+create_figure (GList* figure){
+    Segment* segment = (Segment*)malloc(sizeof(Segment));
+    segment->x = 0.0;
+    segment->y = 0.0;
+
+    figure = g_list_append(figure, segment);
+}
+
+static void
+draw_figure (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
+
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 static void
 draw_display (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
