@@ -172,8 +172,6 @@ draw_digital_clock (GtkDrawingArea *area,
     cairo_move_to(cr, -0.45, -0.4);
     cairo_show_text(cr, text);
 
-
-
     char *unit = "Text goes here!";
 
     cairo_select_font_face (cr, "Roboto Thin",
@@ -195,31 +193,111 @@ typedef struct {
     float i; // Intensity 0.0 - Off (Min), 1.0 -  On (Max)
 } Segment;
 
-GList* figure;
+GList* figure = NULL;
 
-static void
+// Square
+GList*
 create_figure (GList* figure){
-    Segment* segment = (Segment*)malloc(sizeof(Segment));
+    Segment* segment = NULL;
+
+    segment = (Segment*)malloc(sizeof(Segment));
     segment->x = 0.0;
     segment->y = 0.0;
-
+    segment->i = 0.0;
     figure = g_list_append(figure, segment);
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x = 1.0;
+    segment->y = 0.0;
+    segment->i = 1.0;
+    figure = g_list_append(figure, segment);
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x = 1.0;
+    segment->y = 1.0;
+    segment->i = 1.0;
+    figure = g_list_append(figure, segment);
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x = 0.0;
+    segment->y = 1.0;
+    segment->i = 1.0;
+    figure = g_list_append(figure, segment);
+
+    segment = (Segment*)malloc(sizeof(Segment));
+    segment->x = 0.0;
+    segment->y = 0.0;
+    segment->i = 1.0;
+    figure = g_list_append(figure, segment);
+
+    return figure;
+}
+
+void
+free_figure (GList* figure) {
+
+
+}
+
+void
+translate_figure (GList* figure, float dx, float dy) {
+    Segment* segment;
+    GList*   element;
+
+    for(element = figure; element; element = element->next) {
+        segment = element->data;
+        segment->x = segment->x + dx;;
+        segment->y = segment->y + dy;;
+    }
+}
+
+
+void
+scale_figure (GList* figure, float scale) {
+    Segment* segment;
+    GList*   element;
+
+    for(element = figure; element; element = element->next) {
+        segment = element->data;
+        segment->x = segment->x * scale;
+        segment->y = segment->y * scale;;
+    }
+
 }
 
 static void
 draw_figure (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
+    Segment* segment;
+    GList*   element;
+
+    segment = figure->data;
+    cairo_move_to(cr, segment->x, segment->y);
+
+    // Iterate from second element
+    for(element = figure->next; element; element = element->next) {
+        segment = element->data;
+        cairo_line_to(cr, segment->x, segment->y);
+    }
+
+    cairo_stroke(cr);
 
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
+static void
+setup_display (void) {
+
+    figure = create_figure(figure);
+    scale_figure(figure, 0.3);
+}
+
 static void
 draw_display (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
 
     draw_setup (area, cr, width, height, user_data);
     draw_clock (area, cr, width, height, user_data);
     draw_digital_clock (area, cr, width, height, user_data);
-
+    draw_figure (area, cr, width, height, user_data);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -243,6 +321,7 @@ app_activate (GApplication *app, gpointer user_data) {
     display = GTK_WIDGET (gtk_builder_get_object (build, "display"));
     g_object_unref(build);
 
+    setup_display();
     gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA (display), draw_display, NULL, NULL);
     g_timeout_add(1000, (GSourceFunc) time_handler, (gpointer) display);
     gtk_widget_show(win);
