@@ -151,7 +151,7 @@ draw_digital_clock (GtkDrawingArea *area,
 
     int x = 0.5;
     int y = 0.0;
-    float linewidth = 0.1;
+    float fontsize = 0.05;
 
     time_t rawtime;
     time(&rawtime);
@@ -159,10 +159,10 @@ draw_digital_clock (GtkDrawingArea *area,
     struct tm *timeinfo = localtime (&rawtime);
 
     char text[256];
-    cairo_select_font_face(cr, "Courier",
+    cairo_select_font_face(cr, "Roboto Thin",
                            CAIRO_FONT_SLANT_NORMAL,
-                           CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, linewidth);
+                           CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, fontsize);
     cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
 
     snprintf(text, 256, "%02d:%02d:%02d",
@@ -173,101 +173,83 @@ draw_digital_clock (GtkDrawingArea *area,
     cairo_show_text(cr, text);
 
     char *unit = "Text goes here!";
-
-    cairo_select_font_face (cr, "Roboto Thin",
-                            CAIRO_FONT_SLANT_NORMAL,
-                            CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size (cr, linewidth);
-    cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
-    // cairo_text_extents (cr, unit, &extents);
-    // x = width/2.0-(extents.width/2 + extents.x_bearing);
-    // y = height/2.0 - (extents.height/2 );
     cairo_move_to (cr, x, y);
     cairo_show_text (cr, unit);
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
 typedef struct {
     float x;
     float y;
     float i; // Intensity 0.0 - Off (Min), 1.0 -  On (Max)
 } Segment;
 
+// Will modify 'figure' variable if initially NULL, otherwise element will be
+// added to end.
+GList*
+figure_segment_add (GList* figure, float x, float y, float i) {
+    GList*   fig = figure;
+    Segment* segment = NULL;
+
+    segment = (Segment*) malloc(sizeof(Segment));
+    segment->x =  x;
+    segment->y =  y;
+    segment->i =  i;
+
+    figure = g_list_append(figure, segment);
+
+    return figure;
+}
+
 // Square
 GList*
 create_square (GList* figure){
-    Segment* segment = NULL;
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x = 0.0;
-    segment->y = 0.0;
-    segment->i = 0.0;
-    figure = g_list_append(figure, segment);
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x = 1.0;
-    segment->y = 0.0;
-    segment->i = 1.0;
-    figure = g_list_append(figure, segment);
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x = 1.0;
-    segment->y = 1.0;
-    segment->i = 1.0;
-    figure = g_list_append(figure, segment);
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x = 0.0;
-    segment->y = 1.0;
-    segment->i = 1.0;
-    figure = g_list_append(figure, segment);
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x = 0.0;
-    segment->y = 0.0;
-    segment->i = 1.0;
-    figure = g_list_append(figure, segment);
-
+    figure = figure_segment_add(figure, 0.0, 0.0, 0.0);
+    figure = figure_segment_add(figure, 1.0, 0.0, 1.0);
+    figure = figure_segment_add(figure, 1.0, 1.0, 1.0);
+    figure = figure_segment_add(figure, 0.0, 1.0, 1.0);
+    figure = figure_segment_add(figure, 0.0, 0.0, 1.0);
     return figure;
 }
 
 GList*
 create_spaceship (GList* figure){
-    Segment* segment = NULL;
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x =  0.0;
-    segment->y =  0.0;
-    segment->i =  0.0;
-    figure = g_list_append(figure, segment);
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x =  1.0;
-    segment->y =  1.0;
-    segment->i =  1.0;
-    figure = g_list_append(figure, segment);
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x =  0.0;
-    segment->y = -1.0;
-    segment->i =  1.0;
-    figure = g_list_append(figure, segment);
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x = -1.0;
-    segment->y =  1.0;
-    segment->i =  1.0;
-    figure = g_list_append(figure, segment);
-
-    segment = (Segment*)malloc(sizeof(Segment));
-    segment->x =  0.0;
-    segment->y =  0.0;
-    segment->i =  1.0;
-    figure = g_list_append(figure, segment);
-
+    figure = figure_segment_add(figure,  0.0,  0.0, 0.0);
+    figure = figure_segment_add(figure,  1.0, -1.0, 1.0);
+    figure = figure_segment_add(figure,  0.0,  1.0, 1.0);
+    figure = figure_segment_add(figure, -1.0, -1.0, 1.0);
+    figure = figure_segment_add(figure,  0.0,  0.0, 1.0);
     return figure;
 }
 
+
+GList*
+create_spaceship2 (GList* figure) {
+    figure = figure_segment_add(figure,  -1.0,  -2.0, 0.0);
+    figure = figure_segment_add(figure,   0.0,   2.0, 1.0);
+    figure = figure_segment_add(figure,   1.0,  -2.0, 1.0);
+    figure = figure_segment_add(figure,  -0.75, -1.0, 0.0);
+    figure = figure_segment_add(figure,   0.75, -1.0, 1.0);
+    return figure;
+}
+
+
+GList*
+create_radar (GList* figure) {
+    float radius = 1.0;
+
+    figure = figure_segment_add(figure, 0.0, 0.0, 0.0);
+    figure = figure_segment_add(figure, radius, 0.0, 0.0);
+    return figure;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Figure Utilities
+//
+// A 'figure' is a GList of Segment points. The 'intensity' of the first point
+// is ignored. An intensity of 0.0 allows a 'move', rather than a 'draw'.
 
 // TODO Create free_figure function
 void
@@ -275,6 +257,7 @@ free_figure (GList* figure) {
 
 }
 
+// Translate all of the figure points in a fixed direction.
 void
 translate_figure (GList* figure, float dx, float dy) {
     Segment* segment;
@@ -287,6 +270,7 @@ translate_figure (GList* figure, float dx, float dy) {
     }
 }
 
+// Scale a figure by an amount, centered on the origin.
 void
 scale_figure (GList* figure, float scale) {
     Segment* segment;
@@ -295,12 +279,30 @@ scale_figure (GList* figure, float scale) {
     for(element = figure; element; element = element->next) {
         segment = element->data;
         segment->x = segment->x * scale;
-        segment->y = segment->y * scale;;
+        segment->y = segment->y * scale;
     }
 }
 
+// Rotate a figure by an amount, centered on the origin.
+// Angle is in radians.
+// TODO Create rotate_figure()
+void
+rotate_figure (GList* figure, float angle) {
+
+}
+
+// Rotate a figure by an amount, centered on a point.
+// Angle is in radians.
+// TODO Create rotate_point_figure()
+void
+rotate_point_figure (GList* figure, float x, float y, float angle) {
+
+}
+
+//////////////////////////////////////////////////////////////////////////////
 GList* figure    = NULL;
 
+// Draw a single figure on the screen
 static void
 draw_figure (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
     Segment* segment;
@@ -310,32 +312,46 @@ draw_figure (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer 
     cairo_move_to(cr, segment->x, segment->y);
 
     // Iterate from second element
+    // TODO Add intensity properly (rather than on/off)
     for(element = figure->next; element; element = element->next) {
         segment = element->data;
-        cairo_line_to(cr, segment->x, segment->y);
+        if (segment->i == 0.0){
+            cairo_move_to(cr, segment->x, segment->y);
+        } else {
+            cairo_line_to(cr, segment->x, segment->y);
+        }
     }
 
     cairo_stroke(cr);
-
 }
 
 //////////////////////////////////////////////////////////////////////////////
-GList* spaceship = NULL;
-GList* square    = NULL;
+GList* spaceship  = NULL;
+GList* spaceship2 = NULL;
+GList* square     = NULL;
 
 static void
 setup_display (void) {
     GList* spaceship = NULL;
 
     square    = create_square(square);
-    scale_figure(square,0.02);
+    scale_figure(square, 0.02);
+    translate_figure(square, -0.2, 0.0);
 
     spaceship = create_spaceship(spaceship);
-    scale_figure(spaceship,0.02);
+    scale_figure(spaceship, 0.02);
+
+    spaceship2 = create_spaceship2(spaceship2);
+    scale_figure(spaceship2, 0.01);
+    translate_figure(spaceship2, 0.2, 0.0);
 
     figure = g_list_concat(figure, square);
     figure = g_list_concat(figure, spaceship);
+    figure = g_list_concat(figure, spaceship2);
 }
+
+float pos = 0.0;
+float dpos = 0.001;
 
 static void
 draw_display (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
@@ -343,7 +359,14 @@ draw_display (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer
     int x = 0;
     int y = 0;
 
-    translate_figure(figure, 0.0, -0.001);
+    translate_figure(figure, 0.0, dpos);
+    pos = pos + dpos;
+
+    if ( pos > 0.1 ) {
+        dpos = -0.001;
+    } else if (pos < -0.1) {
+        dpos = 0.001;
+    }
 
     draw_setup (area, cr, width, height, user_data);
     draw_clock (area, cr, width, height, user_data);
