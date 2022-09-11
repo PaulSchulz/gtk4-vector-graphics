@@ -244,6 +244,43 @@ create_radar (GList* figure) {
     return figure;
 }
 
+GList*
+create_box (GList* figure, float x, float y, float width, float height) {
+    figure = figure_segment_add(figure, x, y, 0.0);
+    figure = figure_segment_add(figure, x+width,      0.0, 1.0);
+    figure = figure_segment_add(figure, x+width, y+height, 1.0);
+    figure = figure_segment_add(figure, x,       y+height, 1.0);
+    figure = figure_segment_add(figure, x,              y, 1.0);
+    return figure;
+}
+
+GList*
+create_army (GList* figure) {
+    float width = 0.1;
+
+    figure = create_box(figure, 0.0, 0.0, width, width*0.75);
+
+    figure = figure_segment_add(figure,   0.0,         0.0, 0.0);
+    figure = figure_segment_add(figure, width, width * 0.75, 1.0);
+
+    figure = figure_segment_add(figure,   0.0, width * 0.75, 0.0);
+    figure = figure_segment_add(figure, width,         0.0, 1.0);
+
+    return figure;
+}
+
+GList*
+create_cavalry (GList* figure) {
+    float width = 0.1;
+
+    figure = create_box(figure, 0.0, 0.0, width, width*0.75);
+
+    figure = figure_segment_add(figure,   0.0, width * 0.75, 0.0);
+    figure = figure_segment_add(figure, width,         0.0, 1.0);
+
+    return figure;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Figure Utilities
@@ -330,6 +367,10 @@ GList* spaceship  = NULL;
 GList* spaceship2 = NULL;
 GList* square     = NULL;
 
+GList* army       = NULL;
+GList* cavalry    = NULL;
+
+
 static void
 setup_display (void) {
     GList* spaceship = NULL;
@@ -345,9 +386,18 @@ setup_display (void) {
     scale_figure(spaceship2, 0.01);
     translate_figure(spaceship2, 0.2, 0.0);
 
+    army = create_army(army);
+    translate_figure(army, 0.4, 0.0);
+
+    cavalry = create_cavalry(cavalry);
+    translate_figure(cavalry, 0.6, 0.0);
+
     figure = g_list_concat(figure, square);
     figure = g_list_concat(figure, spaceship);
     figure = g_list_concat(figure, spaceship2);
+    figure = g_list_concat(figure, army);
+    figure = g_list_concat(figure, cavalry);
+
 }
 
 float pos = 0.0;
