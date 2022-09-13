@@ -283,6 +283,66 @@ create_cavalry (GList* figure) {
 
 
 //////////////////////////////////////////////////////////////////////////////
+typedef struct {
+    float x;
+    float y;
+    float z;
+    float i; // Intensity 0.0 - Off (Min), 1.0 -  On (Max)
+} Segment3D;
+
+// Will modify 'figure' variable if initially NULL, otherwise element will be
+// added to end.
+GList*
+figure3d_segment3d_add (GList* figure3d, float x, float y, float z, float i) {
+    Segment3D* segment3d = NULL;
+
+    segment3d = (Segment3D*) malloc(sizeof(Segment3D));
+    segment3d->x =  x;
+    segment3d->y =  y;
+    segment3d->z =  z;
+    segment3d->i =  i;
+
+    figure3d = g_list_append(figure3d, segment3d);
+
+    return figure3d;
+}
+
+#define  X0  1.0
+#define  nX (-1.0 * X0)
+#define  Y0 (X0 + 1/sqrt(2.0))
+#define nY0 (-1.0 * Y0)
+
+GList*
+create_icosohedron (GList* figure3d) {
+    Segment3D* segment3d;
+
+    figure3d = figure3d_segment3d_add(figure3d, X0,  Y0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, X0, nY0, 0.0, 1.0);
+
+    return figure3d;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+GList*
+figure3d_project(GList* figure3d, GList* figure) {
+    Segment3D* segment3d = NULL;
+    Segment*   segment   = NULL;
+    GList*     element3d = NULL;
+    GList*     element   = NULL;
+
+    for (element3d = figure3d; element3d; element3d = element3d->next){
+        segment3d = element3d->data;
+        figure = figure_segment_add(figure,
+                                    segment3d->x,
+                                    segment3d->y,
+                                    segment3d->i); // Ignore z
+    }
+
+    return figure;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // Figure Utilities
 //
 // A 'figure' is a GList of Segment points. The 'intensity' of the first point
@@ -300,7 +360,7 @@ translate_figure (GList* figure, float dx, float dy) {
     Segment* segment;
     GList*   element;
 
-    for(element = figure; element; element = element->next) {
+    for (element = figure; element; element = element->next) {
         segment = element->data;
         segment->x = segment->x + dx;;
         segment->y = segment->y + dy;;
@@ -313,7 +373,7 @@ scale_figure (GList* figure, float scale) {
     Segment* segment;
     GList*   element;
 
-    for(element = figure; element; element = element->next) {
+    for (element = figure; element; element = element->next) {
         segment = element->data;
         segment->x = segment->x * scale;
         segment->y = segment->y * scale;
