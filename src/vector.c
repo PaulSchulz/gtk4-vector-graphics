@@ -307,17 +307,33 @@ figure3d_segment3d_add (GList* figure3d, float x, float y, float z, float i) {
     return figure3d;
 }
 
-#define  X0  1.0
-#define  nX (-1.0 * X0)
-#define  Y0 (X0 + 1/sqrt(2.0))
-#define nY0 (-1.0 * Y0)
+#define  A0  1.0
+#define nA0 (-1.0 * A0)
+#define  B0 (sqrt(5.0) - 1.0)/2.0
+#define nB0 (-1.0 * B0)
 
 GList*
 create_icosohedron (GList* figure3d) {
     Segment3D* segment3d;
 
-    figure3d = figure3d_segment3d_add(figure3d, X0,  Y0, 0.0, 0.0);
-    figure3d = figure3d_segment3d_add(figure3d, X0, nY0, 0.0, 1.0);
+    // [1]-[2]
+    figure3d = figure3d_segment3d_add(figure3d,  A0,  B0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d,  A0, nB0, 0.0, 1.0);
+    // [3]-[4]
+    figure3d = figure3d_segment3d_add(figure3d, nA0,  B0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, nA0, nB0, 0.0, 1.0);
+    // [5]-[6]
+    figure3d = figure3d_segment3d_add(figure3d,  B0,  0.0,  A0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, nB0,  0.0,  A0, 1.0);
+    // [7]-[8]
+    figure3d = figure3d_segment3d_add(figure3d,  B0,  0.0, nA0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, nB0,  0.0, nA0, 1.0);
+    // [9]-[10]
+    figure3d = figure3d_segment3d_add(figure3d, 0.0,   A0,  B0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, 0.0,   A0, nB0, 1.0);
+    // [11]-[12]
+    figure3d = figure3d_segment3d_add(figure3d, 0.0,  nA0,  B0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, 0.0,  nA0, nB0, 1.0);
 
     return figure3d;
 }
