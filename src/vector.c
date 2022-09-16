@@ -313,7 +313,7 @@ figure3d_segment3d_add (GList* figure3d, float x, float y, float z, float i) {
 #define nB0 (-1.0 * B0)
 
 GList*
-create_icosohedron (GList* figure3d) {
+create_icosohedron_3d (GList* figure3d) {
     Segment3D* segment3d;
 
     // [1]-[2]
@@ -335,10 +335,80 @@ create_icosohedron (GList* figure3d) {
     figure3d = figure3d_segment3d_add(figure3d, 0.0,  nA0,  B0, 0.0);
     figure3d = figure3d_segment3d_add(figure3d, 0.0,  nA0, nB0, 1.0);
 
+    // [1]-[5]
+    figure3d = figure3d_segment3d_add(figure3d,  A0,   B0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d,  B0,  0.0,  A0, 1.0);
+    // [1]-[7]
+    figure3d = figure3d_segment3d_add(figure3d,  A0,   B0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d,  B0,  0.0, nA0, 1.0);
+    // [2]-[5]
+    figure3d = figure3d_segment3d_add(figure3d,  A0,  nB0, 0.0,  0.0);
+    figure3d = figure3d_segment3d_add(figure3d,  B0,  0.0,  A0, 1.0);
+    // [2]-[7]
+    figure3d = figure3d_segment3d_add(figure3d,  A0,  nB0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d,  B0,  0.0, nA0, 1.0);
+    // [3]-[6]
+    figure3d = figure3d_segment3d_add(figure3d, nA0,   B0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, nB0,  0.0,  A0, 1.0);
+    // [3]-[8]
+    figure3d = figure3d_segment3d_add(figure3d, nA0,   B0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, nB0,  0.0, nA0, 1.0);
+    // [4]-[6]
+    figure3d = figure3d_segment3d_add(figure3d, nA0,  nB0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, nB0,  0.0,  A0, 1.0);
+    // [4]-[8]
+    figure3d = figure3d_segment3d_add(figure3d, nA0,  nB0, 0.0, 0.0);
+    figure3d = figure3d_segment3d_add(figure3d, nB0,  0.0, nA0, 1.0);
+
+    // [5]-[9]
+    // [5]-[11]
+    // [6]-[9]
+    // [6]-[11]
+    // [7]-[10]
+    // [7]-[12]
+    // [8]-[10]
+    // [8]-[12]
+
+    // [3]-[9]
+    // [1]-[9]
+    // [3]-[10]
+    // [1]-[10]
+    // [2]-[11]
+    // [4]-[11]
+    // [2]-[12]
+    // [4]-[12]
+
+
     return figure3d;
 }
 
 //////////////////////////////////////////////////////////////////////////////
+GList*
+figure3d_rotate_y (GList* figure3d, float angle) {
+    Segment3D* segment3d = NULL;
+    GList*     element3d = NULL;
+
+    for (element3d = figure3d; element3d; element3d = element3d->next){
+        segment3d = element3d->data;
+        segment3d->x = segment3d->x * cos(angle) - segment3d->z * sin(angle);
+        segment3d->z = segment3d->x * sin(angle) + segment3d->z * cos(angle);
+    }
+    return figure3d;
+}
+
+GList*
+figure3d_rotate_z (GList* figure3d, float angle) {
+    Segment3D* segment3d = NULL;
+    GList*     element3d = NULL;
+
+    for (element3d = figure3d; element3d; element3d = element3d->next){
+        segment3d = element3d->data;
+        segment3d->x = segment3d->x * cos(angle) - segment3d->y * sin(angle);
+        segment3d->y = segment3d->x * sin(angle) + segment3d->y * cos(angle);
+    }
+    return figure3d;
+}
+
 GList*
 figure3d_project(GList* figure3d, GList* figure) {
     Segment3D* segment3d = NULL;
@@ -378,8 +448,8 @@ translate_figure (GList* figure, float dx, float dy) {
 
     for (element = figure; element; element = element->next) {
         segment = element->data;
-        segment->x = segment->x + dx;;
-        segment->y = segment->y + dy;;
+        segment->x = segment->x + dx;
+        segment->y = segment->y + dy;
     }
 }
 
@@ -438,6 +508,31 @@ draw_figure (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer 
     cairo_stroke(cr);
 }
 
+// Draw a single figure on the screen
+static void
+draw_figure_new (cairo_t *cr, int width, int height, GList* figure) {
+    Segment* segment;
+    GList*   element;
+
+    segment = figure->data;
+    cairo_move_to(cr, segment->x, segment->y);
+
+    // Iterate from second element
+    // TODO Add intensity properly (rather than on/off)
+    for(element = figure->next; element; element = element->next) {
+        segment = element->data;
+        if (segment->i == 0.0){
+            cairo_move_to(cr, segment->x, segment->y);
+        } else {
+            cairo_line_to(cr, segment->x, segment->y);
+        }
+    }
+
+    cairo_stroke(cr);
+}
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 GList* spaceship  = NULL;
 GList* spaceship2 = NULL;
@@ -446,6 +541,8 @@ GList* square     = NULL;
 GList* army       = NULL;
 GList* cavalry    = NULL;
 
+GList* icosohedron3d = NULL;
+GList* icosohedron   = NULL;
 
 static void
 setup_display (void) {
@@ -468,11 +565,20 @@ setup_display (void) {
     cavalry = create_cavalry(cavalry);
     translate_figure(cavalry, 0.6, 0.0);
 
+    // 3D
+    icosohedron3d = create_icosohedron_3d(icosohedron3d);
+    icosohedron3d = figure3d_rotate_z(icosohedron3d, 0.3);
+    icosohedron3d = figure3d_rotate_y(icosohedron3d, 0.3);
+    icosohedron   = figure3d_project(icosohedron3d,icosohedron);
+    scale_figure(icosohedron, 0.3);
+
     figure = g_list_concat(figure, square);
     figure = g_list_concat(figure, spaceship);
     figure = g_list_concat(figure, spaceship2);
     figure = g_list_concat(figure, army);
     figure = g_list_concat(figure, cavalry);
+
+    // figure = g_list_concat(figure, icosohedron);
 
 }
 
@@ -498,6 +604,12 @@ draw_display (GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer
     draw_clock (area, cr, width, height, user_data);
     draw_digital_clock (area, cr, width, height, user_data);
     draw_figure (area, cr, width, height, user_data);
+
+    // Need to free figure data structure when finished.
+    //icosohedron3d = figure3d_rotate(icosohedron3d);
+    //icosohedron   = figure3d_project(icosohedron3d,icosohedron);
+    draw_figure_new (cr, width, height, icosohedron);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
