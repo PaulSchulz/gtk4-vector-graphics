@@ -1,0 +1,21 @@
+#title: Read Me
+
+* Introduction
+
+This software is a *Work in Progress* and a *self education* project for learning
+about GTK4. It should be treated as such. If you find anything here useful or
+interesting, then that is great. I would love to know if this is the case.
+
+Author: Paul Schulz <paul@mawsonlakes.org>
+
+* Other Useful Projects
+** Gtk4 Tutorial for Beginners
+Website: https://github.com/ToshioCP/Gtk4-tutorial
+
+This project goes through a good number of useful examples for writing GTK4
+programs with C.
+
+** Proof Of Concept GTK4 2D Action Game
+Website: https://github.com/lavalfils/poc_gtk4_2D_action_game
+
+This project has a good example for detecting and using  keystrokes.
